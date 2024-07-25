@@ -1,0 +1,2 @@
+<?xml version="1.0" encoding="utf-8"?>
+<merger version="3"><dataSet config="main" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/home/sebas/Documentos/CICLO_7/VISION/PROYECTO/Proyecto_Inter_Vision/opencv/src/main/shaders"/></dataSet><dataSet config="debug" ignore_pattern="!.svn:!.git:!.ds_store:!*.scc:.*:&lt;dir>_*:!CVS:!thumbs.db:!picasa.ini:!*~"><source path="/home/sebas/Documentos/CICLO_7/VISION/PROYECTO/Proyecto_Inter_Vision/opencv/src/debug/shaders"/></dataSet></merger>

@@ -1,0 +1,27 @@
+{
+  "buildFiles": [
+    "/home/sebas/Documentos/CICLO_7/VISION/PROYECTO/Proyecto_Inter_Vision/opencv/libcxx_helper/CMakeLists.txt"
+  ],
+  "cleanCommandsComponents": [
+    [
+      "/home/sebas/Android/Sdk/cmake/3.18.1/bin/ninja",
+      "-C",
+      "/home/sebas/Documentos/CICLO_7/VISION/PROYECTO/Proyecto_Inter_Vision/opencv/.cxx/Debug/6u4w3z6o/arm64-v8a",
+      "clean"
+    ]
+  ],
+  "buildTargetsCommandComponents": [
+    "/home/sebas/Android/Sdk/cmake/3.18.1/bin/ninja",
+    "-C",
+    "/home/sebas/Documentos/CICLO_7/VISION/PROYECTO/Proyecto_Inter_Vision/opencv/.cxx/Debug/6u4w3z6o/arm64-v8a",
+    "{LIST_OF_TARGETS_TO_BUILD}"
+  ],
+  "libraries": {
+    "opencv_jni_shared::@6890427a1f51a3e7e1df": {
+      "artifactName": "opencv_jni_shared",
+      "abi": "arm64-v8a",
+      "output": "/home/sebas/Documentos/CICLO_7/VISION/PROYECTO/Proyecto_Inter_Vision/opencv/.cxx/Debug/6u4w3z6o/arm64-v8a/libopencv_jni_shared.a",
+      "runtimeFiles": []
+    }
+  }
+}

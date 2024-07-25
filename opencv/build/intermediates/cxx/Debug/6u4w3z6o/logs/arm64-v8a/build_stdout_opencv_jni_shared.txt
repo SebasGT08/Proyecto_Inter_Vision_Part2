@@ -1,0 +1,2 @@
+ninja: Entering directory `/home/sebas/Documentos/CICLO_7/VISION/PROYECTO/Proyecto_Inter_Vision/opencv/.cxx/Debug/6u4w3z6o/arm64-v8a'
+ninja: no work to do.
