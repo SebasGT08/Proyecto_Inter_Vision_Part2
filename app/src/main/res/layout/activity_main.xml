@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -22,10 +21,30 @@
         android:layout_below="@id/switch_camera_button"
         android:layout_marginTop="20dp" />
 
+    <Switch
+        android:id="@+id/switch_send_server"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Enviar al servidor"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/switch_draw_mode_button"
+        android:layout_marginTop="20dp" />
+
+    <EditText
+        android:id="@+id/edittext_ip"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:hint="Dirección IP del servidor"
+        android:layout_centerHorizontal="true"
+        android:layout_below="@id/switch_send_server"
+        android:layout_marginTop="20dp"
+        android:inputType="text"
+        android:text="192.168.18.83" />
+
     <org.opencv.android.JavaCameraView
         android:id="@+id/camera_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@id/switch_draw_mode_button"
+        android:layout_below="@id/edittext_ip"
         android:visibility="visible" />
 </RelativeLayout>

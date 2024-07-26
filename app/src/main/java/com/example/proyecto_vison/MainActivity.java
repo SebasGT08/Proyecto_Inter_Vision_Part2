@@ -11,6 +11,8 @@ import android.util.Log;
 import android.view.SurfaceView;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Switch;
 import android.widget.Toast;
 
 import org.opencv.android.CameraActivity;
@@ -47,6 +49,12 @@ public class MainActivity extends CameraActivity implements CameraBridgeViewBase
     private static final int INTERVALO_FRAME = 100; // Intervalo entre cuadros en ms (10 fps)
     private boolean esCamaraFrontal = false; // Para controlar la cámara
     private boolean esModoDibujarGafas = true; // Modo de dibujo inicial
+    private boolean enviarAlServidor = false; // Flag para enviar al servidor
+    private String direccionIPServidor = "";
+    private boolean socketConectado = false; // Indicador de conexión del socket
+
+    private Switch switchSendServer;
+    private EditText edittextIP;
 
     static {
         System.loadLibrary("proyecto_vison");
@@ -91,32 +99,27 @@ public class MainActivity extends CameraActivity implements CameraBridgeViewBase
 
         inicializarCascade(rutaCascadeRostros, rutaCascadeOjos, rutaCascadeNariz, rutaCascadeBoca,rutaBigote);
 
+        // Inicializar componentes del layout
+        switchSendServer = findViewById(R.id.switch_send_server);
+        edittextIP = findViewById(R.id.edittext_ip);
 
+        // Configurar switch para enviar al servidor
+        switchSendServer.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            enviarAlServidor = isChecked;
+            if (isChecked) {
+                edittextIP.setEnabled(false); // Deshabilitar EditText cuando el Switch está activado
+                direccionIPServidor = edittextIP.getText().toString();
+                inicializarSocket(direccionIPServidor);
+            } else {
+                edittextIP.setEnabled(true); // Habilitar EditText cuando el Switch está desactivado
+                if (socket != null) {
+                    socket.disconnect();
+                    socket.off();
+                    socketConectado = false;
+                }
+            }
+        });
 
-
-        // Inicializar la conexión de socket
-        try {
-            socket = IO.socket("http://192.168.18.83:5000");
-            socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
-                @Override
-                public void call(Object... args) {
-                    Log.i(TAG, "Socket conectado");
-                }
-            }).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
-                @Override
-                public void call(Object... args) {
-                    Log.i(TAG, "Socket desconectado");
-                }
-            }).on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
-                @Override
-                public void call(Object... args) {
-                    Log.e(TAG, "Error de conexión de socket: " + args[0]);
-                }
-            });
-            socket.connect();
-        } catch (URISyntaxException e) {
-            Log.e(TAG, "Error de sintaxis URI en socket", e);
-        }
 
         // Configurar botón para cambiar la cámara
         Button botonCambiarCamara = findViewById(R.id.switch_camera_button);
@@ -127,6 +130,35 @@ public class MainActivity extends CameraActivity implements CameraBridgeViewBase
         botonCambiarModoDibujo.setOnClickListener(v -> {
             esModoDibujarGafas = !esModoDibujarGafas; // Cambiar modo de dibujo
         });
+    }
+
+    private void inicializarSocket(String ip) {
+        try {
+            socket = IO.socket("http://" + ip + ":5000");
+            socket.on(Socket.EVENT_CONNECT, new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    Log.i(TAG, "Socket conectado");
+                    socketConectado = true;
+                }
+            }).on(Socket.EVENT_DISCONNECT, new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    Log.i(TAG, "Socket desconectado");
+                    socketConectado = false;
+                }
+            }).on(Socket.EVENT_CONNECT_ERROR, new Emitter.Listener() {
+                @Override
+                public void call(Object... args) {
+                    Log.e(TAG, "Error de conexión de socket: " + args[0]);
+                    socketConectado = false;
+                }
+            });
+            socket.connect();
+        } catch (URISyntaxException e) {
+            Log.e(TAG, "Error de sintaxis URI en socket", e);
+            socketConectado = false;
+        }
     }
 
     // Cambiar entre la cámara frontal y trasera
@@ -241,8 +273,11 @@ public class MainActivity extends CameraActivity implements CameraBridgeViewBase
         // Procesar el frame redimensionado para detectar rostros y dibujar gafas si está habilitado
         procesarFrame(frameRedimensionado.getNativeObjAddr(), esModoDibujarGafas);
 
-        // Enviar el frame procesado al servidor
-        enviarFrameAlServidor(frameRedimensionado);
+        // Enviar el frame procesado al servidor si está habilitado
+        if (enviarAlServidor && socketConectado) {
+            enviarFrameAlServidor(frameRedimensionado);
+        }
+
 
         // Redimensionar de nuevo a la resolución original antes de mostrar
         Imgproc.resize(frameRedimensionado, frameOriginal, frameOriginal.size());
