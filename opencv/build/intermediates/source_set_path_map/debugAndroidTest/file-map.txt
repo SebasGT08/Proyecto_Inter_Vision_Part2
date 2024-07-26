@@ -1,0 +1,8 @@
+org.opencv.test.opencv-androidTest-0 /home/sebas/Documentos/CICLO_7/VISION/PROYECTO/Proyecto_Inter_Vision/opencv/build/generated/res/resValues/androidTest/debug
+org.opencv.test.opencv-androidTest-1 /home/sebas/Documentos/CICLO_7/VISION/PROYECTO/Proyecto_Inter_Vision/opencv/build/generated/res/rs/androidTest/debug
+org.opencv.test.opencv-mergeDebugAndroidTestResources-2 /home/sebas/Documentos/CICLO_7/VISION/PROYECTO/Proyecto_Inter_Vision/opencv/build/intermediates/incremental/debugAndroidTest/mergeDebugAndroidTestResources/merged.dir
+org.opencv.test.opencv-mergeDebugAndroidTestResources-3 /home/sebas/Documentos/CICLO_7/VISION/PROYECTO/Proyecto_Inter_Vision/opencv/build/intermediates/incremental/debugAndroidTest/mergeDebugAndroidTestResources/stripped.dir
+org.opencv.test.opencv-merged_res-4 /home/sebas/Documentos/CICLO_7/VISION/PROYECTO/Proyecto_Inter_Vision/opencv/build/intermediates/merged_res/debugAndroidTest
+org.opencv.test.opencv-packaged_res-5 /home/sebas/Documentos/CICLO_7/VISION/PROYECTO/Proyecto_Inter_Vision/opencv/build/intermediates/packaged_res/debug
+org.opencv.test.opencv-androidTest-6 /home/sebas/Documentos/CICLO_7/VISION/PROYECTO/Proyecto_Inter_Vision/opencv/src/androidTest/res
+org.opencv.test.opencv-androidTestDebug-7 /home/sebas/Documentos/CICLO_7/VISION/PROYECTO/Proyecto_Inter_Vision/opencv/src/androidTestDebug/res

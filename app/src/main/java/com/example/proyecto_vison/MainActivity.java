@@ -52,7 +52,7 @@ public class MainActivity extends CameraActivity implements CameraBridgeViewBase
         System.loadLibrary("proyecto_vison");
     }
 
-    public native void inicializarCascade(String rutaCascadeRostros, String rutaCascadeOjos, String rutaCascadeNariz, String rutaCascadeBoca);
+    public native void inicializarCascade(String rutaCascadeRostros, String rutaCascadeOjos, String rutaCascadeNariz, String rutaCascadeBoca, String rutaBigote);
     public native void procesarFrame(long direccionMatRgba, boolean esModoDibujarGafas);
 
     @Override
@@ -86,8 +86,13 @@ public class MainActivity extends CameraActivity implements CameraBridgeViewBase
         String rutaCascadeOjos = copiarAsset("haarcascade_eye.xml");
         String rutaCascadeNariz = copiarAsset("haarcascade_mcs_nose.xml");
         String rutaCascadeBoca = copiarAsset("haarcascade_mcs_mouth.xml");
+        // Copiar la imagen del bigote desde assets al almacenamiento interno
+        String rutaBigote = copiarAsset("bigote.png");
 
-        inicializarCascade(rutaCascadeRostros, rutaCascadeOjos, rutaCascadeNariz, rutaCascadeBoca);
+        inicializarCascade(rutaCascadeRostros, rutaCascadeOjos, rutaCascadeNariz, rutaCascadeBoca,rutaBigote);
+
+
+
 
         // Inicializar la conexión de socket
         try {

@@ -1,15 +1,23 @@
 #include <jni.h>
 #include <string>
 #include <opencv2/opencv.hpp>
+#include <android/log.h>
 
 using namespace cv;
 using namespace std;
+
+#define LOG_TAG "native-lib"
+#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__)
 
 // Declaración de los clasificadores en cascada
 CascadeClassifier clasificadorRostros;
 CascadeClassifier clasificadorOjos;
 CascadeClassifier clasificadorNariz;
 CascadeClassifier clasificadorBoca;
+
+//Ruta del asset del bigote
+string rutaBigote;
 
 // Variables para los parámetros de detección de rostros
 double escalaRostros = 1.1;
@@ -25,14 +33,14 @@ Size minTamanoOjos(20, 20);
 
 
 // Variables para los parámetros de detección de nariz
-double escalaNariz = 1.1;
+double escalaNariz = 1.5;
 int minVecinosNariz = 3;
 Size minTamanoNariz(20, 20);
 
 // Variables para los parámetros de detección de boca
-double escalaBoca = 1.1;
+double escalaBoca = 1.5;
 int minVecinosBoca = 5;
-Size minTamanoBoca(30, 30);
+Size minTamanoBoca(20, 20);
 
 // Función para dibujar gafas en la imagen
 void dibujarGafas(Mat& imagen, Point centroOjoIzquierdo, Point centroOjoDerecho) {
@@ -74,32 +82,75 @@ void dibujarGafas(Mat& imagen, Point centroOjoIzquierdo, Point centroOjoDerecho)
     }
 }
 
+void dibujarBigote(Mat& imagen, Point centroOjoIzquierdo, Point centroOjoDerecho, Point centroNariz, Point centroBoca) {
+    // Cargar la imagen del bigote desde la ruta especificada
+    Mat bigote = imread(rutaBigote, IMREAD_UNCHANGED);
+    if (bigote.empty()) {
+        LOGE("No se pudo cargar la imagen del bigote desde %s", rutaBigote.c_str());
+        return;
+    }
+    // Calcular la distancia entre los ojos para determinar el tamaño del bigote
+    int distanciaOjos = norm(centroOjoIzquierdo - centroOjoDerecho);
+
+    // Establecer un tamaño relativo para el bigote basado en la distancia entre los ojos
+    int anchoBigote = distanciaOjos * 1.5;  // Ajusta este factor según sea necesario
+    int altoBigote = bigote.rows * anchoBigote / bigote.cols;
+
+    // Redimensionar la imagen del bigote
+    resize(bigote, bigote, Size(anchoBigote, altoBigote));
+
+    // Calcular la posición superior izquierda del bigote
+    int x = centroNariz.x - anchoBigote / 2;
+    int y = centroNariz.y + (centroBoca.y - centroNariz.y) / 2 - altoBigote / 2;
+
+    // Crear una región de interés en la imagen original
+    Rect roi(x, y, anchoBigote, altoBigote);
+    Mat imagenROI = imagen(roi);
+
+    // Combinar la imagen del bigote con la imagen original
+    for (int i = 0; i < bigote.rows; ++i) {
+        for (int j = 0; j < bigote.cols; ++j) {
+            Vec4b& bgra = bigote.at<Vec4b>(i, j);
+            if (bgra[3] > 0) { // Verificar el canal alfa para la transparencia
+                imagenROI.at<Vec3b>(i, j) = Vec3b(bgra[0], bgra[1], bgra[2]);
+            }
+        }
+    }
+}
+
+
 // Función para inicializar los clasificadores en cascada
 extern "C" JNIEXPORT void JNICALL
 Java_com_example_proyecto_1vison_MainActivity_inicializarCascade(
-        JNIEnv* env, jobject, jstring rutaCascadeRostros, jstring rutaCascadeOjos, jstring rutaCascadeNariz, jstring rutaCascadeBoca) {
+        JNIEnv* env, jobject, jstring rutaCascadeRostros, jstring rutaCascadeOjos, jstring rutaCascadeNariz, jstring rutaCascadeBoca, jstring rutaBigoteJNI) {
     const char* rutaRostros = env->GetStringUTFChars(rutaCascadeRostros, 0);
     const char* rutaOjos = env->GetStringUTFChars(rutaCascadeOjos, 0);
     const char* rutaNariz = env->GetStringUTFChars(rutaCascadeNariz, 0);
     const char* rutaBoca = env->GetStringUTFChars(rutaCascadeBoca, 0);
+    const char* rutaBigoteC = env->GetStringUTFChars(rutaBigoteJNI, 0);
 
     if (!clasificadorRostros.load(rutaRostros)) {
-        std::cerr << "Error cargando el archivo de cascada de rostros" << std::endl;
+        LOGE("Error cargando el archivo de cascada de rostros");
     }
     if (!clasificadorOjos.load(rutaOjos)) {
-        std::cerr << "Error cargando el archivo de cascada de ojos" << std::endl;
+        LOGE("Error cargando el archivo de cascada de ojos");
     }
     if (!clasificadorNariz.load(rutaNariz)) {
-        std::cerr << "Error cargando el archivo de cascada de nariz" << std::endl;
+        LOGE("Error cargando el archivo de cascada de nariz");
     }
     if (!clasificadorBoca.load(rutaBoca)) {
-        std::cerr << "Error cargando el archivo de cascada de boca" << std::endl;
+        LOGE("Error cargando el archivo de cascada de boca");
     }
+
+    rutaBigote = string(rutaBigoteC);
 
     env->ReleaseStringUTFChars(rutaCascadeRostros, rutaRostros);
     env->ReleaseStringUTFChars(rutaCascadeOjos, rutaOjos);
     env->ReleaseStringUTFChars(rutaCascadeNariz, rutaNariz);
     env->ReleaseStringUTFChars(rutaCascadeBoca, rutaBoca);
+    env->ReleaseStringUTFChars(rutaBigoteJNI, rutaBigoteC);
+
+    LOGD("Cascadas y ruta del bigote inicializadas");
 }
 
 // Función para detectar rostros y ojos
@@ -156,6 +207,7 @@ void detectar(Mat& frame, bool modoDibujarGafas) {
 
                     if (!narices.empty()) {
                         Rect narizSeleccionada;
+                        //Validar la nariz para usar las mas cercana al centro y que este debajo de los ojos
                         for (const auto& nariz : narices) {
                             Point centroNariz(rostros[i].x + nariz.x + nariz.width / 2,
                                               rostros[i].y + nariz.y + nariz.height / 2);
@@ -174,6 +226,7 @@ void detectar(Mat& frame, bool modoDibujarGafas) {
 
                             if (!bocas.empty()) {
                                 Rect bocaSeleccionada;
+                                //Validar la boca y usar la mas cercana al centro de la nariz y debajo de la nariz
                                 for (const auto& boca : bocas) {
                                     Point centroBoca(rostros[i].x + boca.x + boca.width / 2,
                                                      rostros[i].y + boca.y + boca.height / 2);
@@ -184,9 +237,16 @@ void detectar(Mat& frame, bool modoDibujarGafas) {
                                 }
 
                                 if (!bocaSeleccionada.empty()) {
+                                    Point centroNariz(rostros[i].x + narizSeleccionada.x + narizSeleccionada.width / 2,
+                                                      rostros[i].y + narizSeleccionada.y + narizSeleccionada.height / 2);
+                                    Point centroBoca(rostros[i].x + bocaSeleccionada.x + bocaSeleccionada.width / 2,
+                                                     rostros[i].y + bocaSeleccionada.y + bocaSeleccionada.height / 2);
+
                                     if (modoDibujarGafas) {
                                         // Dibujar las gafas
                                         dibujarGafas(frame, centroOjoIzquierdo, centroOjoDerecho);
+                                        // Dibujar el bigote
+                                        dibujarBigote(frame, centroOjoIzquierdo, centroOjoDerecho,centroNariz, centroBoca);
                                     } else {
                                         // Dibujar contornos de los ojos, nariz y boca
                                         for (size_t j = 0; j < ojos.size(); j++) {
@@ -196,14 +256,11 @@ void detectar(Mat& frame, bool modoDibujarGafas) {
                                             circle(frame, centroOjo, radio,
                                                    Scalar(255, 0, 0), 4);
                                         }
-                                        Point centroNariz(rostros[i].x + narizSeleccionada.x + narizSeleccionada.width / 2,
-                                                          rostros[i].y + narizSeleccionada.y + narizSeleccionada.height / 2);
+
                                         ellipse(frame, centroNariz, Size(narizSeleccionada.width / 2,
                                                                          narizSeleccionada.height / 2), 0, 0,
                                                 360, Scalar(0, 255, 0), 4);
 
-                                        Point centroBoca(rostros[i].x + bocaSeleccionada.x + bocaSeleccionada.width / 2,
-                                                         rostros[i].y + bocaSeleccionada.y + bocaSeleccionada.height / 2);
                                         ellipse(frame, centroBoca, Size(bocaSeleccionada.width / 2,
                                                                         bocaSeleccionada.height / 2), 0, 0,
                                                 360, Scalar(0, 0, 255), 4);
