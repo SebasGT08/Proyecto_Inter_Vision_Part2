@@ -1,4 +1,4 @@
-#Thu Jul 25 19:43:23 ECT 2024
+#Tue Jul 30 23:36:34 ECT 2024
 base.2=/home/sebas/Documentos/CICLO_7/VISION/PROYECTO/Proyecto_Inter_Vision/opencv/build/intermediates/dex/debugAndroidTest/mergeProjectDexDebugAndroidTest/2/classes.dex
 path.2=2/classes.dex
 base.1=/home/sebas/Documentos/CICLO_7/VISION/PROYECTO/Proyecto_Inter_Vision/opencv/build/intermediates/dex/debugAndroidTest/mergeProjectDexDebugAndroidTest/0/classes.dex
